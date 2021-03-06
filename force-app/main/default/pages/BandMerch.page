@@ -1,0 +1,150 @@
+<apex:page controller="Bandmerch" docType="html-5.0">
+  <style>
+    .main {
+      display: inline-block;
+      width: 66%;
+    }
+    .items {
+      vertical-align: top;
+    }
+    .cart {
+      display: inline-block;
+      width: 33%;
+      vertical-align: top;
+    }
+    h1 {
+      display: block;
+      font-size: 50px;
+      color: gold;
+    }
+    .item {
+      border: 2px solid gold;
+      padding: 1em;
+      margin-bottom: 1em;
+    }
+    .item-price {
+      text-align: right;
+    }
+    .body {
+      padding: 1.5em;
+    }
+    .message {
+      padding: 1em;
+      color: white;
+      background: steelblue;
+      font-size: large;
+    }
+    .message.failure {
+      background: indianred;
+    }
+  </style>
+  <h1>Zealot</h1>
+  <apex:outputPanel id="main" styleClass="main">
+    <apex:outputPanel layout="block" styleClass="items" rendered="{!state == 'initial state'}">
+      <apex:form>
+        <apex:repeat value="{!items}" var="item">
+          <section class="item">
+            <p>{!item.merch.name}</p>
+            <span>
+              <apex:selectList size="1" value="{!item.addedQuantity}">
+                <apex:selectOption itemLabel="1" itemValue="1" />
+                <apex:selectOption itemLabel="2" itemValue="2" />
+                <apex:selectOption itemLabel="3" itemValue="3" />
+                <apex:selectOption itemLabel="4" itemValue="4" />
+                <apex:selectOption itemLabel="5" itemValue="5" />
+              </apex:selectList>
+            </span>
+            <span>
+              <apex:outputText value="{0, number, currency}">
+                <apex:param value="{!item.merch.price__c}"/>
+              </apex:outputText>
+            </span>
+            <span>
+              <apex:commandButton value="Add" action="{!Item.add}" reRender="cart"/>
+            </span>
+          </section>
+        </apex:repeat>
+      </apex:form>
+    </apex:outputPanel>
+    <apex:outputPanel id="ccInput" layout="block" rendered="{!state == 'checkout'}">
+      <apex:outputText value="{!error}" styleClass="message failure" rendered="{!error != null}"/>
+      <apex:form>
+        <div>
+          <apex:inputText value="{!ccNumber}" html-placeholder="Credit Card Number"/>
+        </div>
+        <div>
+          <apex:inputText value="{!expMonth}" html-placeholder="Experation Month"/>
+        </div>
+        <div>
+          <apex:inputText value="{!expYear}" html-placeholder="Experation Year"/>
+        </div>
+        <div>
+          <apex:inputText value="{!ccv}" html-placeholder="CCV"/>
+        </div>
+        <div>
+          <apex:inputText value="{!email}" html-placeholder="Email"/>
+        </div>
+        <div>
+          <apex:inputText value="{!firstName}" html-placeholder="First Name"/>
+        </div>
+        <div>
+          <apex:inputText value="{!lastName}" html-placeholder="Last Name"/>
+        </div>
+        <div>
+          <apex:inputText value="{!street}" html-placeholder="Street"/>
+        </div>
+        <div>
+          <apex:inputText value="{!zipcode}" html-placeholder="Zipcode"/>
+        </div>
+        <apex:commandButton value="Place Order" action="{!chargeCard}" />
+      </apex:form>
+    </apex:outputPanel>
+    <apex:outputPanel styleClass="message" layout="block" rendered="{!state == 'complete'}">
+      Thanks for buying our stuff!
+    </apex:outputPanel>
+  </apex:outputPanel>
+  <apex:outputPanel layout="block" styleClass="cart" id="cart">
+    <apex:outputPanel rendered="{!total <= 0}">
+      The cart is empty!
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!total > 0}">
+      <apex:form>
+      <table class="">
+        <thead>
+          <th>Item</th>
+          <th>Quantity</th>
+          <th>Subtotal</th>
+        </thead>
+        <tbody>
+          <apex:repeat value="{!items}" var="item">
+            <tr class="{!if(item.quantity > 0, '', 'hidden')}">
+              <td>{!item.merch.name}</td>
+              <td>
+                <apex:input type="number" value="{!item.quantity}" onblur="updateQuantity()"/>
+              </td>
+              <td>
+                <apex:outputText value="{0, number, currency}">
+                  <apex:param value="{!item.subtotal}"/>
+                </apex:outputText>
+              </td>
+            </tr>
+          </apex:repeat>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td></td>
+            <td>Total</td>
+            <td>
+              <apex:outputText value="{0, number, currency}">
+                <apex:param value="{!total}"/>
+              </apex:outputText>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+      <apex:actionFunction name="updateQuantity" action="{!updateQuantity}" reRender="cart"/>
+      <apex:commandButton value="checkout" action="{!displayCheckout}" reRender="" />
+    </apex:form>
+    </apex:outputPanel>
+  </apex:outputPanel>
+</apex:page>
